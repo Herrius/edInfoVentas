@@ -1,6 +1,9 @@
+const { response, json } = require("express");
+
 const express = require("express"),
   webSocket = require("ws"),
   createError = require("http-errors"),
+  url = require("url"),
   app = express(),
   token = "kfgdags415f51fd15bffevveqp";
 // simulacion de una base de datos
@@ -47,17 +50,36 @@ const wss = new webSocket.Server({ noServer: true });
 wss.on("connection", (ws, req, nameClient) => {
   // mensaje de entrada, menos al que se conecto
   wss.clients.forEach(client => {
+    // envio a todos menos al que emitio el mensaje
     if (client !== ws && client.readyState === webSocket.OPEN)
       client.send(JSON.stringify({ type: "open", user: nameClient }));
   })
   // envio de mensajes a todos
-  wa.on("message", message => {
+  ws.on("message", message => {
     const msgJson = JSON.parse(message);
-    if (msgJson.type == "message")
-      msgJson.user = nameClient;
-    wss.clients.forEach(client => {
-      client.send(JSON.stringify(msgJson));
-    })
+    let responseData = {}
+    if (msgJson.type == "message") {
+      responseData = msgJson;
+      responseData.user = nameClient;
+      // enviar a todos los clientes("conectados")
+      wss.clients.forEach(client => {
+        client.send(JSON.stringify(responseData));
+      })
+    }
+    else if (msgJson.type == "sale") {
+      responseData = {
+        type: "sale",
+        data_product: msgJson.product,
+        data_quantity: msgJson.quantity
+      }
+      // enviar a todos los clientes("conectados")
+      wss.clients.forEach(client => {
+        client.send(JSON.stringify(responseData));
+      })
+    } else if (msgJson.type == "ping") {
+      ws.send(JSON.stringify({ type: "pong" }));
+    }
+
   })
   // envio de mensaje cuando alguien se retira;
   ws.on("close", () => {
@@ -70,7 +92,8 @@ wss.on("connection", (ws, req, nameClient) => {
 
 // veriicacion de usuario
 server.on("upgrade", (req, socket, head) => {
-  const query = req.query;
+  const urlParseada = url.parse(req.url, true);
+  const query = urlParseada.query;
   if (query.token != token) {
     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
     socket.destroy();
