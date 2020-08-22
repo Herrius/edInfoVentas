@@ -24,7 +24,7 @@ app
     const user = req.body.user.toLowerCase();
     const password = req.body.password;
     // verificacion del user en la "base de datos";
-    if (name && password && db[name] == password) {
+    if (user && password && db[user] == password) {
       res.status(200)
       res.json({
         data: {

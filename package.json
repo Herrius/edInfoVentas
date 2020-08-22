@@ -1,7 +1,7 @@
 {
   "name": "ws",
   "version": "1.0.0",
-  "description": "\"probando websocket y ajax\"",
+  "description": "\"probando ws\"",
   "main": "app.js",
   "dependencies": {
     "chart.js": "^2.9.3",
@@ -11,7 +11,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "nodemon conws.js"
+    "start": "node app.js"
   },
   "author": "Gerson Berrocal <gwrsonberrocal@gmail.com>",
   "license": "ISC"
